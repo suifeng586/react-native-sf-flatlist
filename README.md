@@ -30,6 +30,7 @@
 |beginRefreshHeader|null|null|手动开始下拉刷新||
 |endRefreshHeader|null|null|结束下拉刷新（数据更新成功后调用）||
 |endRefreshFooter|null|null|结束上拉刷新（数据更新成功后调用）||
+|endRefreshNomore|null|null|结束上拉刷新,没有更多数据状态，再次加载不会调用onBeginRefreshFooter（数据更新成功后调用）||
 
 
 # 例子
