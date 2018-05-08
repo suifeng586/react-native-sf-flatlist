@@ -15,6 +15,7 @@ import {
     Easing
 } from 'react-native'
 import PropTypes from 'prop-types'
+import SFFlatListFooter from './SFFlatListFooter'
 var width = Dimensions.get('window').width;
 var height = Dimensions.get('window').width;
 
@@ -27,23 +28,24 @@ export default class SFFlatList extends Component {
         refreshHeaderBgColor: PropTypes.string,
         emptyComponent: PropTypes.object,
         emptyDefaultTitle: PropTypes.string,
-        emptyDefaultColor: PropTypes.string
+        emptyDefaultColor: PropTypes.string,
+        onEndShouldRate: PropTypes.number
+
 
     }
     static defaultProps={
         emptyDefaultTitle:'没有数据',
-        emptyDefaultColor:'rgba(200,200,200,1)'
+        emptyDefaultColor:'rgba(200,200,200,1)',
+        onEndShouldRate:0.2
     }
 
     constructor(props) {
         super(props)
         this.state = {
             refreshHeader:false,
-            refreshFooter:false,
-            refreshFooterNomore:false,
-            refreshFooterRotate:new Animated.Value(0),
             fHeight:0,//flatList高度,
             isShowEmpty:false
+
         }
     }
 
@@ -57,14 +59,10 @@ export default class SFFlatList extends Component {
     keyExtractor = (item, index) => 'flcell_'+index;
 
     beginRefreshHeader = () => {
-        this.setState({
-            refreshHeader:true
-        })
         this.onDidRefreshHeader()
     }
 
     endRefreshHeader = () => {
-        console.log('endRefreshHeader')
         this.setState({
             refreshHeader:false
         },()=>{
@@ -77,41 +75,50 @@ export default class SFFlatList extends Component {
                 }
             }
         })
-
     }
     endRefreshFooter = () => {
-        console.log('endRefreshFooter')
-        this.setState({
-            refreshFooter:false
-        })
+        this.refs.flatFooter.endRefresh()
+    }
+    endRefreshNomore = () => {
+        this.refs.flatFooter.endRefreshNomore()
     }
 
     onDidRefreshHeader = () => {
-        this.props.onBeginRefreshHeader();
-        console.log('onDidRefreshFooter')
+        if (this.props.onBeginRefreshHeader){
+            var state = this.refs.flatFooter.getRefreshState();
+            if (state == 2){
+                this.refs.flatFooter.endRefresh();
+            }
+            this.setState({
+                refreshHeader:true
+            })
+            this.props.onBeginRefreshHeader();
+        }
     }
     onDidRefreshFooter = () => {
-        if (this.props.data.length == 0){
-            return
-        }
-        if (!this.state.refreshFooter){
-            this.setState({
-                refreshFooter:true
-            })
-
-            var TIMES = 10;
-            Animated.timing(this.state.refreshFooterRotate,{
-                toValue: 360*TIMES,
-                duration: 800*TIMES,
-                easing: Easing.linear
-            }).start();// 开始spring动画
-
-            console.log('onDidRefreshFooter')
+        if (this.props.onBeginRefreshFooter){
+            this.refs.flatFooter.didRefresh()
             this.props.onBeginRefreshFooter();
         }
-
     }
+    onScroll = (e) => {
+        if (!this.props.onBeginRefreshFooter){
+            return;
+        }
+        var state = this.refs.flatFooter.getRefreshState();
+        if (state != 0){
+            return;
+        }
+        let scrollY = e.nativeEvent.contentOffset.y;
+        let contentHeight = e.nativeEvent.contentSize.height;
+        if (contentHeight == 0 || scrollY <= 0 ){
+            return;
+        }
 
+        if (scrollY+this.state.fHeight > contentHeight-this.state.fHeight*this.props.onEndShouldRate){
+            this.onDidRefreshFooter()
+        }
+    }
     render() {
 
         return (
@@ -120,10 +127,11 @@ export default class SFFlatList extends Component {
                 ListEmptyComponent = {this.renderEmpty()}
                 keyExtractor = {this.keyExtractor}
                 refreshControl={this.renderHeader()}
+                initialNumToRender={15}
                 ListFooterComponent={this.renderFooter()}
-                onEndReached={this.onDidRefreshFooter}
-                onEndReachedThreshold={0.3}
+                onScroll={this.onScroll}
                 onLayout={e => {
+                    console.log('1111')
                     let height = e.nativeEvent.layout.height;
                     if (this.state.fHeight < height) {
                         this.setState({fHeight: height})
@@ -174,25 +182,9 @@ export default class SFFlatList extends Component {
         return null;
     }
     renderFooter = () => {
-        if (this.props.onBeginRefreshFooter && !this.state.refreshFooterNomore && this.state.refreshFooter){
-            return(
-                <View style={{
-                    width:width,
-                    height:50,
-                    alignItems:'center',
-                    justifyContent:'center'
-                }}>
-                    <Animated.Image source={require('./img/footer_loading.png')} style={{
-                        width:24,
-                        height:24,
-                        transform:[{rotate: this.state.refreshFooterRotate
-                            .interpolate({inputRange: [0, 360],outputRange: ['0deg', '360deg']})
-                        }]
-                    }}></Animated.Image>
-                </View>
-            )
-        }
-        return null;
+        return(
+            <SFFlatListFooter ref="flatFooter"/>
+        )
     }
 
 }
