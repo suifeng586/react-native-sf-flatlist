@@ -16,6 +16,7 @@
 |:-----|:-----|:-----|:-----|:-----|
 |onBeginRefreshHeader|func|no|开始下拉刷新回调|null|
 |onBeginRefreshFooter|func|no|开始上拉刷新回调|null|
+|onEndShouldRate|number|no|上拉开始刷新的距离（0-1.0）|0.2|
 |refreshHeaderTitle|string|no|上拉刷新标题|null|
 |refreshHeaderColor|string|no|上拉刷新菊花颜色|null|
 |refreshHeaderBgColor|string|no|上拉刷新背景颜色（仅限Android）|null|
@@ -30,6 +31,7 @@
 |beginRefreshHeader|null|null|手动开始下拉刷新||
 |endRefreshHeader|null|null|结束下拉刷新（数据更新成功后调用）||
 |endRefreshFooter|null|null|结束上拉刷新（数据更新成功后调用）||
+|endRefreshNomore|null|null|结束上拉刷新,没有更多数据状态，再次加载不会调用onBeginRefreshFooter（数据更新成功后调用）||
 
 
 # 例子
