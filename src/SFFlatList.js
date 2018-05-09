@@ -115,7 +115,7 @@ export default class SFFlatList extends Component {
             return;
         }
 
-        if (scrollY+this.state.fHeight > contentHeight-this.state.fHeight*this.props.onEndShouldRate){
+        if (scrollY+this.state.fHeight < contentHeight-this.state.fHeight*this.props.onEndShouldRate){
             this.onDidRefreshFooter()
         }
     }
