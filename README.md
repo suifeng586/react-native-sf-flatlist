@@ -1,10 +1,10 @@
-# react-native-sf-flatlist
+# react-native-sf-drawer
 
 
-# 支持上拉下拉刷新的FlatList,解决ListEmptyComponent不能居中显示的问题，并且只在第一次数据加载后数据为空时才会显示
+# 侧边栏
 
 
-![show](./show1.gif)   ![show](./show2.gif)
+![show](./show.gif)
 
 
 # 安装
@@ -14,24 +14,20 @@
 # Props
 |  parameter  |  type  |  required  |   description  |  default  |
 |:-----|:-----|:-----|:-----|:-----|
-|onBeginRefreshHeader|func|no|开始下拉刷新回调|null|
-|onBeginRefreshFooter|func|no|开始上拉刷新回调|null|
-|onEndShouldRate|number|no|上拉开始刷新的距离（0-1.0）|0.2|
-|refreshHeaderTitle|string|no|上拉刷新标题|null|
-|refreshHeaderColor|string|no|上拉刷新菊花颜色|null|
-|refreshHeaderBgColor|string|no|上拉刷新背景颜色（仅限Android）|null|
-|emptyComponent|component|no|空数据时显示组件|null|
-|emptyDefaultTitle|string|no|emptyComponent为空时默认空数据标题|'没有数据'|
-|emptyDefaultColor|string|no|emptyComponent为空时默认空数据颜色|'rgba(200,200,200,1)'|
+|drawerWidthRate|number|no|侧边栏暂屏幕宽度的比例（0.0-1.0）|0.7|
+|drawerHeight|number|no|侧边栏高度|null|
+|drawerDirection|string|no|侧边栏的方向（'left','right'）|'left'|
+|drawerTop|number|no|侧边栏距离上方的高度|0|
+|backgroundColor|string|no|背景颜色|'rgba(0,0,0,0.7)'|
+|onOpen|func|no|开始显示|null|
+|onClose|func|no|开始关闭|null|
 
 
 # Methods
 |  Methods  |  Params  |  Param Types  |   description  |  Example  |
 |:-----|:-----|:-----|:-----|:-----|
-|beginRefreshHeader|null|null|手动开始下拉刷新||
-|endRefreshHeader|null|null|结束下拉刷新（数据更新成功后调用）||
-|endRefreshFooter|null|null|结束上拉刷新（数据更新成功后调用）||
-|endRefreshNomore|null|null|结束上拉刷新,没有更多数据状态，再次加载不会调用onBeginRefreshFooter（数据更新成功后调用）||
+|show|null|null|显示侧边栏||
+|hide|null|null|隐藏侧边栏||
 
 
 # 例子
@@ -42,127 +38,46 @@ import {
   StyleSheet,
   Text,
   View,
-  Image,
-    Dimensions
+    Dimensions,
+    TouchableOpacity
 } from 'react-native';
-import SFFlatList from "react-native-sf-flatlist"
-var width = Dimensions.get('window').width;
 
+import SFDrawer from "react-native-sf-drawer"
+var dw = Dimensions.get('window').width;
+var dh = Dimensions.get('window').height;
 export default class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      dataSource:[
+  click = () => {
+    this.refs.drawer.show()
 
-      ]
-    }
-  }
-  componentDidMount() {
-    this.refs.flat.beginRefreshHeader()
-
-  }
-  onBeginRefreshHeader = () => {
-    setTimeout(()=>{
-      //测试数据
-      tmp = [];
-      for (var i = 0; i < 15; i++){
-        var data = {name:'标题_'+i,des:'描述描述'};
-        tmp.push(data);
-      }
-      this.setState({
-        dataSource:tmp
-      })
-      //结束下拉刷新
-      this.refs.flat.endRefreshHeader()
-    },1000)
-  }
-  onBeginRefreshFooter = () => {
-    setTimeout(()=>{
-      //测试数据
-      tmp = [];
-      for (var i = 0; i < 5; i++){
-        var data = {name:'标题_'+i,des:'描述描述'};
-        tmp.push(data);
-      }
-      this.setState({
-        dataSource:this.state.dataSource.concat(tmp)
-      },()=>{
-        this.refs.flat.endRefreshFooter()
-      })
-
-      //结束上啦刷新
-
-    },2000)
-  }
-  _renderItem = ({item}) => {
-    return(
-      <View style={{
-        height:50
-      }}>
-        <Text style={{
-          fontSize:20,
-          color:'black'
-        }}>{item.name}</Text>
-      </View>
-    )
-  }
-  emptyComponent = () => {
-    return(
-        <View style={{
-          width:width,
-          height:300,
-          alignItems:'center',
-          justifyContent:'center'
-        }}>
-          <Image style={{
-            width:100,
-            height:100
-          }} source={require('./img/comment.png')}>
-
-          </Image>
-          <Text style={{
-            color:'rgba(205,205,205,1)',
-            fontSize:15,
-            marginTop:20
-          }}>{'还没有人评论，加油跟帖吧～'}</Text>
-        </View>
-    )
   }
   render() {
     return (
       <View style={styles.container}>
-        <View style={{
-          width:width,
-          height:60,
-          alignItems:'center',
-          backgroundColor:'rgba(33,143,252,1)',
-          justifyContent:'center'
-        }}>
-          <Text style={{
-            fontSize:16,
-            color:'white',
-            marginTop:10
-          }}>FlatList</Text>
-        </View>
-        <SFFlatList
-            ref = "flat"
-            onBeginRefreshHeader={this.onBeginRefreshHeader}
-            onBeginRefreshFooter={this.onBeginRefreshFooter}
-            emptyComponent={this.emptyComponent()}
-            data={this.state.dataSource}
-            renderItem={this._renderItem}
-        />
+        <TouchableOpacity onPress={this.click}>
+          <View style={{
+            width:dw,
+            height:150,
+            backgroundColor:'red'
+          }}></View>
+        </TouchableOpacity>
+
+        <SFDrawer
+            ref="drawer"
+            drawerTop={40}
+            drawerHeight={dh-40}
+
+          drawerDirection={'left'}
+        >
+          <View style={{
+            height:dh,
+            backgroundColor:'green'
+          }}></View>
+        </SFDrawer>
       </View>
     );
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
-
-});
 
 
 ```
